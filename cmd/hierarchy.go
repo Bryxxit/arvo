@@ -1,0 +1,164 @@
+package cmd
+
+import (
+	"fmt"
+	"github.com/akira/go-puppetdb"
+	"github.com/gin-gonic/gin"
+	"github.com/jeremywohl/flatten"
+	"log"
+	"net/http"
+	"regexp"
+	"strings"
+)
+
+func GetHierarchyEndPoint(conf Conf) gin.HandlerFunc {
+	fn := func(c *gin.Context) {
+		defer c.Done()
+
+		h := GetPathsAndVarsInHierarchy(conf)
+		c.JSON(http.StatusOK, h)
+
+	}
+	return gin.HandlerFunc(fn)
+}
+
+func GetPathsAndVarsInHierarchy(conf Conf) HierarchyResult {
+	var hier LookupYaml
+	hier.getConf(conf.HieraFile)
+	paths_to_read := []string{}
+
+	for _, h := range hier.Hierarchy {
+		if h.Paths != nil {
+			for _, p := range *h.Paths {
+				paths_to_read = append(paths_to_read, conf.DataDir+"/"+p)
+			}
+		}
+		if h.Path != nil {
+			paths_to_read = append(paths_to_read, conf.DataDir+"/"+*h.Path)
+			log.Println(*h.Path)
+
+		}
+	}
+
+	hiera_vars := []string{}
+	for _, p := range paths_to_read {
+		arr := getFactsFromPath(p)
+		for _, fact := range arr {
+			if !stringInSlice(fact, hiera_vars) {
+				hiera_vars = append(hiera_vars, fact)
+			}
+
+		}
+	}
+	h := HierarchyResult{
+		Paths:     paths_to_read,
+		Variables: hiera_vars,
+	}
+	return h
+}
+
+func GetHierarchyForCertnameEndpoint(conf Conf) gin.HandlerFunc {
+	fn := func(c *gin.Context) {
+		var u1 JSONID
+		c.ShouldBindUri(&u1)
+		defer c.Done()
+		h := GetPathsAndVarsInHierarchy(conf)
+
+		facts := GetFactsMapForCertName(conf, u1.ID)
+		if len(facts) == 0 {
+			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "No facts found for node are you sure node exists or PuppetDB connection is valid"})
+
+		} else {
+			for _, v := range h.Variables {
+				for index, p := range h.Paths {
+					if val, ok := facts[v]; ok {
+						op1 := fmt.Sprintf("%%{::%s}", v)
+						op2 := fmt.Sprintf("%%{%s}", v)
+						str := strings.ReplaceAll(p, op1, val.(string))
+						str = strings.ReplaceAll(str, op2, val.(string))
+						h.Paths[index] = str
+					}
+				}
+			}
+
+			c.JSON(http.StatusOK, h)
+		}
+	}
+	return gin.HandlerFunc(fn)
+}
+
+func GetFactsMapForCertName(conf Conf, certname string) map[string]interface{} {
+	var cl *puppetdb.Client
+	if !conf.Puppet.SSL {
+		cl = puppetdb.NewClient(conf.Puppet.Host, conf.Puppet.Port, false)
+
+	} else {
+		if conf.Puppet.Insecure {
+			cl = puppetdb.NewClientSSLInsecure(conf.Puppet.Host, conf.Puppet.Port, false)
+
+		} else {
+			cl = puppetdb.NewClientSSL(conf.Puppet.Host, conf.Puppet.Port, conf.Puppet.Key, conf.Puppet.Cert, conf.Puppet.Ca, false)
+
+		}
+	}
+	facts, _ := cl.NodeFacts(certname)
+	mapy := make(map[string]interface{})
+	for i, fact := range facts {
+		if i == 0 {
+			mapy["environment"] = fact.Environment
+		}
+		switch (fact.Value.Data()).(type) {
+		case map[string]interface{}:
+			nested := fact.Value.Data().(map[string]interface{})
+			flat, err := flatten.Flatten(nested, "", flatten.DotStyle)
+			if err != nil {
+				log.Println(err.Error())
+			}
+			for k, v := range flat {
+				mapy[fact.Name+"."+k] = v
+
+			}
+		case interface{}:
+			mapy[fact.Name] = fact.Value.Data()
+		default:
+			log.Println("Unknown data type was parsed in facts of this host " + certname + " fact " + fact.Name)
+		}
+	}
+	return mapy
+}
+
+//func hieraVarToFact(facts map[string]string, variable string) *string {
+//	if val, ok := facts[variable]; ok {
+//		return &val
+//	}
+//	return nil
+//}
+
+// getFactsFromPath gets the fact names from the hiera path
+func getFactsFromPath(path string) []string {
+	counter := 0
+	str := path
+	facts := []string{}
+	for counter < 20 {
+		found, _ := regexp.MatchString("(.*)?([%][{].*[}]).*", str)
+		if found {
+			regex := *regexp.MustCompile(`(.*)?([%][{].*[}]).*`)
+			hostGroupMatch := regex.FindStringSubmatch(str)
+			fact := getFactNameFromHieraVar(hostGroupMatch[2])
+			facts = append(facts, fact)
+			str = strings.ReplaceAll(str, hostGroupMatch[2], fact)
+
+		} else {
+			counter = 50
+		}
+		counter = counter + 1
+	}
+	return facts
+}
+
+func getFactNameFromHieraVar(variable string) string {
+	str := strings.ReplaceAll(variable, "%{", "")
+	str = strings.TrimSuffix(str, "}")
+	str = strings.TrimPrefix(str, "::")
+	return str
+}
