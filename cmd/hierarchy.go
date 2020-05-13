@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"github.com/akira/go-puppetdb"
 	"github.com/gin-gonic/gin"
@@ -23,7 +24,7 @@ func GetHierarchyEndPoint(conf Conf) gin.HandlerFunc {
 }
 
 func GetPathsAndVarsInHierarchy(conf Conf) HierarchyResult {
-	var hier LookupYaml
+	var hier HierarchyYamlFile
 	hier.getConf(conf.HieraFile)
 	paths_to_read := []string{}
 
@@ -62,29 +63,40 @@ func GetHierarchyForCertnameEndpoint(conf Conf) gin.HandlerFunc {
 		var u1 JSONID
 		c.ShouldBindUri(&u1)
 		defer c.Done()
-		h := GetPathsAndVarsInHierarchy(conf)
+		h, err := GetHierarchyForCertname(conf, u1.ID)
 
-		facts := GetFactsMapForCertName(conf, u1.ID)
-		if len(facts) == 0 {
-			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "No facts found for node are you sure node exists or PuppetDB connection is valid"})
-
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error()})
 		} else {
-			for _, v := range h.Variables {
-				for index, p := range h.Paths {
-					if val, ok := facts[v]; ok {
-						op1 := fmt.Sprintf("%%{::%s}", v)
-						op2 := fmt.Sprintf("%%{%s}", v)
-						str := strings.ReplaceAll(p, op1, val.(string))
-						str = strings.ReplaceAll(str, op2, val.(string))
-						h.Paths[index] = str
-					}
-				}
-			}
-
 			c.JSON(http.StatusOK, h)
 		}
+
 	}
 	return gin.HandlerFunc(fn)
+}
+
+// GetHierarchyForCertname Gets the hierarchy result for a certname if it exists
+func GetHierarchyForCertname(conf Conf, certname string) (*HierarchyResult, error) {
+	h := GetPathsAndVarsInHierarchy(conf)
+
+	facts := GetFactsMapForCertName(conf, certname)
+	if len(facts) == 0 {
+		return nil, errors.New("No facts found for node are you sure node exists or PuppetDB connection is valid")
+
+	} else {
+		for _, v := range h.Variables {
+			for index, p := range h.Paths {
+				if val, ok := facts[v]; ok {
+					op1 := fmt.Sprintf("%%{::%s}", v)
+					op2 := fmt.Sprintf("%%{%s}", v)
+					str := strings.ReplaceAll(p, op1, val.(string))
+					str = strings.ReplaceAll(str, op2, val.(string))
+					h.Paths[index] = str
+				}
+			}
+		}
+		return &h, nil
+	}
 }
 
 func GetFactsMapForCertName(conf Conf, certname string) map[string]interface{} {

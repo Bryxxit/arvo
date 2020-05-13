@@ -34,9 +34,11 @@ func main() {
 
 	if c.DataDir == "" {
 		c.DataDir = "/root/Desktop/HieraData"
+		c.DataDir = "C:\\Users\\tieyz_admin\\Desktop\\test"
+
 	}
 	if c.KeyTTLMinutes == 0 {
-		c.KeyTTLMinutes = 1
+		c.KeyTTLMinutes = 15
 	}
 
 	if c.HieraFile == "" {
@@ -71,6 +73,7 @@ func main() {
 		v1.GET("/keys/:id", cmd.GetKeysForOneCertnamesEndpoint(c))
 		v1.GET("/hierarchy", cmd.GetHierarchyEndPoint(c))
 		v1.GET("/hierarchy/:id", cmd.GetHierarchyForCertnameEndpoint(c))
+		v1.GET("/clean/:id", cmd.GetKeyLocationsForCertnameEndpoint(c))
 
 	}
 
@@ -84,7 +87,7 @@ func main() {
 
 //func temp() {
 //	datadir := "/root/Desktop/hieradata"
-//	var c LookupYaml
+//	var c HierarchyYamlFile
 //	c.getConf("/root/Desktop/go-scripts/hiera-clean/example-lookup.yaml")
 //	paths_to_read := []string{}
 //

@@ -8,8 +8,8 @@ import (
 	"log"
 )
 
-func getHieraKeyValueEntriesForPath(p string) []HieraKeyFullEntry {
-	values := []HieraKeyFullEntry{}
+func getHieraKeyValueEntriesForPath(p string) []HieraKey {
+	values := []HieraKey{}
 	if DoesFileExist(p) {
 		c := yamlToMap(p)
 		values = getKeys(c, p)
@@ -19,14 +19,14 @@ func getHieraKeyValueEntriesForPath(p string) []HieraKeyFullEntry {
 
 }
 
-func getKeys(m *bson.M, path string) []HieraKeyFullEntry {
-	keys := []HieraKeyFullEntry{}
+func getKeys(m *bson.M, path string) []HieraKey {
+	keys := []HieraKey{}
 	for k, v := range *m {
-		key := HieraKeyFullEntry{
+		key := HieraKey{
 			Key:      k,
 			SubKeys:  []string{},
 			InLookup: false,
-			Values:   []HieraKeyFullValueEntry{},
+			Values:   []HieraKeyEntry{},
 		}
 		process(v, &k, &key, path)
 		keys = append(keys, key)
@@ -48,7 +48,7 @@ func yamlToMap(path string) *bson.M {
 }
 
 //https://stackoverflow.com/questions/26975880/convert-mapinterface-interface-to-mapstringstring
-func process(in interface{}, parentKey *string, key *HieraKeyFullEntry, path string) {
+func process(in interface{}, parentKey *string, key *HieraKey, path string) {
 	//switch v := in.(type)
 	if parentKey != nil {
 		if !stringInSlice(*parentKey, key.SubKeys) {
@@ -69,7 +69,7 @@ func process(in interface{}, parentKey *string, key *HieraKeyFullEntry, path str
 		}
 	case string:
 		str := fmt.Sprintf("%s", *parentKey)
-		e := HieraKeyFullValueEntry{
+		e := HieraKeyEntry{
 			Path:  path,
 			Key:   str,
 			Type:  "string",
@@ -82,7 +82,7 @@ func process(in interface{}, parentKey *string, key *HieraKeyFullEntry, path str
 	case int:
 		str := fmt.Sprintf("%s", *parentKey)
 		//(*keys)[str] = in.(int)
-		e := HieraKeyFullValueEntry{
+		e := HieraKeyEntry{
 			Path:  path,
 			Key:   str,
 			Type:  "int",
@@ -94,7 +94,7 @@ func process(in interface{}, parentKey *string, key *HieraKeyFullEntry, path str
 	case float64:
 		str := fmt.Sprintf("%s", *parentKey)
 		//(*keys)[str] = in.(float64)
-		e := HieraKeyFullValueEntry{
+		e := HieraKeyEntry{
 			Path:  path,
 			Key:   str,
 			Type:  "float64",
@@ -106,7 +106,7 @@ func process(in interface{}, parentKey *string, key *HieraKeyFullEntry, path str
 	case bool:
 		str := fmt.Sprintf("%s", *parentKey)
 		//(*keys)[str] = in.(bool)
-		e := HieraKeyFullValueEntry{
+		e := HieraKeyEntry{
 			Path:  path,
 			Key:   str,
 			Type:  "bool",
@@ -127,7 +127,7 @@ func process(in interface{}, parentKey *string, key *HieraKeyFullEntry, path str
 	//	//println(fmt.Sprintf("%s: %d", *parentKey, in.(float64)))
 	default:
 		str := fmt.Sprintf("%s", *parentKey)
-		e := HieraKeyFullValueEntry{
+		e := HieraKeyEntry{
 			Path:  path,
 			Key:   str,
 			Type:  "other",

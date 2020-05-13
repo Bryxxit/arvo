@@ -64,7 +64,7 @@ func GetKeysForAllCertnamesEndpoint(conf Conf) gin.HandlerFunc {
 
 func PostKeyEndpoint(conf Conf) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
-		var u HieraLogEntry
+		var u HieraHostDBLogEntry
 		err := c.BindJSON(&u)
 		defer c.Done()
 
@@ -74,9 +74,9 @@ func PostKeyEndpoint(conf Conf) gin.HandlerFunc {
 		} else {
 			currentTime := time.Now()
 			str := currentTime.Format(LAYOUT)
-			e := HieraLogHost{
+			e := HieraHostDBEntry{
 				ID: u.Certname,
-				Entries: []HieraLogEntry{
+				Entries: []HieraHostDBLogEntry{
 					{
 						Certname: u.Certname,
 						Key:      u.Key,
@@ -96,9 +96,9 @@ func PostKeyEndpoint(conf Conf) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
-func GetAllCertnameLogEntry(d Database) ([]HieraLogHost, error) {
+func GetAllCertnameLogEntry(d Database) ([]HieraHostDBEntry, error) {
 	dbConn, err := NewClient(d.Host, d.Port, d.Database)
-	arr := []HieraLogHost{}
+	arr := []HieraHostDBEntry{}
 	if err != nil {
 		return arr, err
 	}
@@ -109,7 +109,7 @@ func GetAllCertnameLogEntry(d Database) ([]HieraLogHost, error) {
 	// Finding multiple documents returns a cursor
 	cur, err := collection.Find(context.TODO(), filter, findOptions)
 	for cur.Next(context.TODO()) {
-		var elem HieraLogHost
+		var elem HieraHostDBEntry
 
 		err := cur.Decode(&elem)
 		if err != nil {
@@ -122,7 +122,7 @@ func GetAllCertnameLogEntry(d Database) ([]HieraLogHost, error) {
 	return arr, nil
 }
 
-func GetOneCertnameLogEntry(d Database, certname string) (*HieraLogHost, error) {
+func GetOneCertnameLogEntry(d Database, certname string) (*HieraHostDBEntry, error) {
 	dbConn, err := NewClient(d.Host, d.Port, d.Database)
 	if err != nil {
 		return nil, err
@@ -131,11 +131,11 @@ func GetOneCertnameLogEntry(d Database, certname string) (*HieraLogHost, error) 
 	findOptions := options.Find()
 	findOptions.SetLimit(1)
 	filter := bson.D{{"_id", certname}}
-	var result *HieraLogHost
+	var result *HieraHostDBEntry
 	// Finding multiple documents returns a cursor
 	cur, err := collection.Find(context.TODO(), filter, findOptions)
 	for cur.Next(context.TODO()) {
-		var elem HieraLogHost
+		var elem HieraHostDBEntry
 		err := cur.Decode(&elem)
 		if err != nil {
 			log.Println(err.Error())
@@ -154,7 +154,7 @@ func GetOneCertnameLogEntry(d Database, certname string) (*HieraLogHost, error) 
 	return nil, errors.New("Entry not found")
 }
 
-func InsertLogEntry(e HieraLogHost, d Database) (*string, error) {
+func InsertLogEntry(e HieraHostDBEntry, d Database) (*string, error) {
 
 	dbConn, err := NewClient(d.Host, d.Port, d.Database)
 	if err != nil {
@@ -170,7 +170,7 @@ func InsertLogEntry(e HieraLogHost, d Database) (*string, error) {
 	return &str, nil
 }
 
-func InsertLogEntryWrapper(e HieraLogHost, d Conf) (*string, error) {
+func InsertLogEntryWrapper(e HieraHostDBEntry, d Conf) (*string, error) {
 	// first see if entry exists
 	e2, err := GetOneCertnameLogEntry(d.DB, e.ID)
 	// if noet we can Insert
@@ -191,7 +191,7 @@ func InsertLogEntryWrapper(e HieraLogHost, d Conf) (*string, error) {
 	return nil, errors.New("Something went wrong with code logic")
 }
 
-func UpdateLogEntryDB(e HieraLogHost, d Database) (*string, error) {
+func UpdateLogEntryDB(e HieraHostDBEntry, d Database) (*string, error) {
 	ks, _ := GetOneCertnameLogEntry(d, e.ID)
 	if ks == nil {
 		return nil, errors.New("Entry not found")
@@ -217,8 +217,8 @@ func UpdateLogEntryDB(e HieraLogHost, d Database) (*string, error) {
 	return &str, nil
 }
 
-func RemoveOldLogEntries(e HieraLogHost, conf Conf, entry HieraLogEntry) HieraLogHost {
-	entries := []HieraLogEntry{}
+func RemoveOldLogEntries(e HieraHostDBEntry, conf Conf, entry HieraHostDBLogEntry) HieraHostDBEntry {
+	entries := []HieraHostDBLogEntry{}
 	for _, k := range e.Entries {
 
 		//str := currentTime.Format(LAYOUT)
