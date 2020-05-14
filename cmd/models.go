@@ -92,16 +92,6 @@ func (c *HierarchyYamlFile) getConf(configFile string) {
 	}
 }
 
-//type Host struct {
-//	Certname string          `json:"certname"`
-//	Keys     []HieraKeyEntry `json:"keys"`
-//}
-//
-//type HieraKeyEntry struct {
-//	Key  string    `json:"key"`
-//	Date time.Time `json:"date"`
-//}
-
 // HieraHostDBLogEntry is a single entry the hiera-log makes. So it is just a lookup for a key for a certname
 type HieraHostDBLogEntry struct {
 	Certname string  `json:"certname"`
@@ -113,34 +103,6 @@ type HieraHostDBLogEntry struct {
 type HieraHostDBEntry struct {
 	ID      string                `bson:"_id"json:"id"`
 	Entries []HieraHostDBLogEntry `json:"keys"`
-}
-
-// HieraKey Is an object that holds yaml data for a specific key
-type HieraKey struct {
-	Key      string          `json:"key"yaml:"key"`
-	SubKeys  []string        `json:"sub_keys"yaml:"sub_keys"`
-	InLookup bool            `json:"in_lookup"yaml:"in_lookup"`
-	Values   []HieraKeyEntry `json:"in_lookup"yaml:"values"`
-}
-
-// HieraKeyENtry holds data for a single subkey of HieraKey and which data was in it and where it was found
-type HieraKeyEntry struct {
-	Path  string      `json:"path"yaml:"path"`
-	Key   string      `json:"key"yaml:"key"`
-	Type  string      `json:"type"yaml:"type"`
-	Value interface{} `json:"value"yaml:"value"`
-}
-
-type HieraKeyMatch struct {
-	Key       string               `json:"key"yaml:"key"`
-	Locations []string             `json:"locations"yaml:"locations"`
-	Matches   []HieraKeyMatchEntry `json:"matches"yaml:"matches"`
-}
-
-type HieraKeyMatchEntry struct {
-	Path1 string `json:"path1"yaml:"path1"`
-	Path2 string `json:"path2"yaml:"path2"`
-	Key   string `json:"key"yaml:"key"`
 }
 
 // HierarchyResult is an object that is used to return data in json form trough the api. It holds the result for which hierarchy was found and which variables
@@ -179,4 +141,11 @@ func NewClient(host string, port int, database string) (*mongo.Client, error) {
 	}
 
 	return client, err
+}
+
+type YamlCleanResult struct {
+	InLogNotInHiera []string             `json:"in_log_not_in_hiera"yaml:"in_log_not_in_hiera"`
+	InLogAndHiera   []InLogAndHieraEntry `json:"in_log_and_hiera"yaml:"in_log_and_hiera"`
+	InHieraNotInLog []InLogAndHieraEntry `json:"in_hiera_not_in_log"yaml:"in_hiera_not_in_log"`
+	DuplicateData   []InLogAndHieraEntry `json:"duplicates"yaml:"duplicates"`
 }

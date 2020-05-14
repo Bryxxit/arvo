@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/jeremywohl/flatten"
 	"gopkg.in/yaml.v2"
@@ -9,15 +8,6 @@ import (
 	"log"
 	"net/http"
 )
-
-type YamlCleanResult struct {
-	//Key     string `json:"key"yaml:"key"`
-	InLogNotInHiera []string             `json:"in_log_not_in_hiera"yaml:"in_log_not_in_hiera"`
-	InLogAndHiera   []InLogAndHieraEntry `json:"in_log_and_hiera"yaml:"in_log_and_hiera"`
-	InHieraNotInLog []InLogAndHieraEntry `json:"in_hiera_not_in_log"yaml:"in_hiera_not_in_log"`
-	DuplicateData   []InLogAndHieraEntry `json:"duplicates"yaml:"duplicates"`
-	//State     string `json:"state"yaml:"state"`
-}
 
 type InLogAndHieraEntry struct {
 	Key   string   `json:"key"yaml:"key"`
@@ -159,17 +149,17 @@ func IsKeyInMap(key string, mapy map[string]interface{}) bool {
 
 func FlattenYamlMap(yaml map[string]interface{}) map[string]interface{} {
 	for key, val := range yaml {
-		yaml[key] = Process2(val)
+		yaml[key] = Process(val)
 	}
 	return yaml
 }
 
-func Process2(in interface{}) interface{} {
+func Process(in interface{}) interface{} {
 	switch in.(type) {
 	case map[interface{}]interface{}:
 		m := MapToMap(in.(map[interface{}]interface{}))
 		for k, val := range m {
-			m[k] = Process2(val)
+			m[k] = Process(val)
 
 		}
 		return m
@@ -222,109 +212,4 @@ func ReadFile(path string) []byte {
 	}
 
 	return content
-}
-
-func printDuplicateEntries(values []HieraKey) {
-	matches := LookForDuplicateData(values)
-
-	for _, m := range matches {
-		fmt.Println(m.Key)
-		fmt.Println("locations:")
-		for _, l := range m.Locations {
-			println("  - " + l)
-		}
-		fmt.Println("matches:")
-		for _, l := range m.Matches {
-			str := fmt.Sprintf("%s: %s - %s", l.Key, l.Path1, l.Path2)
-			println("  - " + str)
-		}
-	}
-}
-
-func LookForDuplicateData(values []HieraKey) []HieraKeyMatch {
-	matchArr := []HieraKeyMatch{}
-	arr := []string{}
-	for index1, val1 := range values {
-		matches := []HieraKey{val1}
-		for index2, val2 := range values {
-			if val1.Key == val2.Key && index1 != index2 {
-				matches = append(matches, val2)
-			}
-		}
-
-		if len(matches) > 1 {
-			if !stringInSlice(val1.Key, arr) {
-				a := HieraKeyMatch{
-					Key:       val1.Key,
-					Locations: []string{},
-					Matches:   []HieraKeyMatchEntry{},
-				}
-				for index3, v := range matches {
-					for _, r := range v.Values {
-						if !stringInSlice(r.Path, a.Locations) {
-							a.Locations = append(a.Locations, r.Path)
-						}
-					}
-					if index3 < len(matches)-1 {
-						entries := CompareTwoHieraEntries(matches[index3], matches[index3+1])
-						a.Matches = append(a.Matches, entries...)
-					}
-				}
-				matchArr = append(matchArr, a)
-				arr = append(arr, val1.Key)
-			}
-
-		}
-	}
-	return matchArr
-}
-
-func CompareTwoHieraEntries(var1 HieraKey, var2 HieraKey) []HieraKeyMatchEntry {
-	arr := []HieraKeyMatchEntry{}
-	for _, value1 := range var1.Values {
-		for _, value2 := range var2.Values {
-			if value1.Key == value2.Key && value2.Value == value1.Value {
-				a := HieraKeyMatchEntry{
-					Path1: value1.Path,
-					Path2: value2.Path,
-					Key:   value1.Key,
-				}
-				arr = append(arr, a)
-			}
-		}
-	}
-	return arr
-}
-
-func PrintKeysNotLookedUp(values []HieraKey) {
-	arr := []string{}
-	for _, key := range values {
-		if !key.InLookup && !stringInSlice(key.Key, arr) {
-			arr = append(arr, key.Key)
-			fmt.Println(key.Key)
-		}
-	}
-
-}
-
-//func SetInLookup(values *[]HieraKey) {
-//	keys := GetAllKeys()
-//
-//	for _, e := range keys {
-//		for index, e2 := range *values {
-//			if stringInSlice(e.Key, e2.SubKeys) {
-//				(*values)[index].InLookup = true
-//			}
-//		}
-//	}
-//}
-
-func getAllValuesInYaml(paths []string) []HieraKey {
-	values := []HieraKey{}
-	for _, p := range paths {
-		val := getHieraKeyValueEntriesForPath(p)
-		values = append(values, val...)
-	}
-
-	return values
 }

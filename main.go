@@ -10,7 +10,7 @@ import (
 
 var (
 	addr = flag.String("listen-address", ":8162", "The address to listen on for ")
-	conf = flag.String("conf", "config/hiera-clean.yaml", "The path to the config file.")
+	conf = flag.String("conf", "arvo.yaml", "The path to the config file.")
 )
 
 func main() {
@@ -33,8 +33,7 @@ func main() {
 	}
 
 	if c.DataDir == "" {
-		c.DataDir = "/root/Desktop/HieraData"
-		c.DataDir = "C:\\Users\\tieyz_admin\\Desktop\\test"
+		c.DataDir = "/etc/puppetlabs/code/environment/production/data"
 
 	}
 	if c.KeyTTLMinutes == 0 {
@@ -43,7 +42,6 @@ func main() {
 
 	if c.HieraFile == "" {
 		c.HieraFile = "/etc/puppetlabs/puppet/hiera.yaml"
-		c.HieraFile = "C:\\Users\\tieyz_admin\\Desktop\\Go\\arvo\\hiera.yaml"
 	}
 
 	if c.Puppet.Host == "" {

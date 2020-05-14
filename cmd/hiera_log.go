@@ -235,38 +235,3 @@ func RemoveOldLogEntries(e HieraHostDBEntry, conf Conf, entry HieraHostDBLogEntr
 	e.Entries = entries
 	return e
 }
-
-//func GetAllKeys() []HieraKeyEntry {
-//	content, err := ioutil.ReadFile("/root/Desktop/go-scripts/hiera-clean/example-log")
-//	if err != nil {
-//		log.Fatal(err)
-//	}
-//	// Convert []byte to string and print to screen
-//	text := string(content)
-//	keys := []HieraKeyEntry{}
-//	lines := strings.Split(text, "\n")
-//	for _, l := range lines {
-//		k := lineToEntry(l)
-//		if k != nil {
-//			keys = append(keys, *k)
-//		}
-//	}
-//	//for _, k := range keys {
-//	//	println(k.Key)
-//	//
-//	//}
-//	return keys
-//}
-//
-//func lineToEntry(line string) *HieraKeyEntry {
-//	colls1 := strings.Split(line, " ")
-//	if len(colls1) == 12 {
-//		e := HieraKeyEntry{
-//			Key:  colls1[11],
-//			Date: time.Now(),
-//		}
-//		return &e
-//	}
-//
-//	return nil
-//}

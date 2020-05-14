@@ -139,13 +139,6 @@ func GetFactsMapForCertName(conf Conf, certname string) map[string]interface{} {
 	return mapy
 }
 
-//func hieraVarToFact(facts map[string]string, variable string) *string {
-//	if val, ok := facts[variable]; ok {
-//		return &val
-//	}
-//	return nil
-//}
-
 // getFactsFromPath gets the fact names from the hiera path
 func getFactsFromPath(path string) []string {
 	counter := 0
