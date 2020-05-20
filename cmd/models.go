@@ -156,3 +156,14 @@ type YamlCleanResult struct {
 	InHieraNotInLog []InLogAndHieraEntry `json:"in_hiera_not_in_log"yaml:"in_hiera_not_in_log"`
 	DuplicateData   []InLogAndHieraEntry `json:"duplicates"yaml:"duplicates"`
 }
+
+type CleanAllResult struct {
+	ID             string        `bson:"_id"json:"id"`
+	PathsNeverUsed []string      `json:"paths_never_used"yaml:"paths_never_used"`
+	KeysNeverUsed  []YamlKeyPath `json:"keys_never_used"yaml:"keys_never_used"`
+}
+
+type YamlKeyPath struct {
+	Paths []string `json:"paths"yaml:"paths"`
+	Key   string   `json:"key"yaml:"key"`
+}

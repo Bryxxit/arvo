@@ -36,7 +36,7 @@ func GetPathsAndVarsInHierarchy(conf Conf) HierarchyResult {
 		}
 		if h.Path != nil {
 			paths_to_read = append(paths_to_read, conf.DataDir+"/"+*h.Path)
-			log.Println(*h.Path)
+			//log.Println(*h.Path)
 
 		}
 	}

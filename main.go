@@ -74,7 +74,8 @@ func main() {
 		v1.GET("/keys/:id", cmd.GetKeysForOneCertnamesEndpoint(c))
 		v1.GET("/hierarchy", cmd.GetHierarchyEndPoint(c))
 		v1.GET("/hierarchy/:id", cmd.GetHierarchyForCertnameEndpoint(c))
-		v1.GET("/clean", cmd.GetKeyLocationsForCertnameEndpoint(c))
+		v1.GET("/clean-all/refresh", cmd.CleanAllRefreshEndpoint(c))
+		v1.GET("/clean-all", cmd.CleanAllEndpoint(c))
 		v1.GET("/clean/:id", cmd.GetKeyLocationsForCertnameEndpoint(c))
 
 	}

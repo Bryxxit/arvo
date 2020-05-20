@@ -104,7 +104,6 @@ func GetAllCertnameLogEntry(d Database) ([]HieraHostDBEntry, error) {
 	}
 	collection := dbConn.Database(d.Database).Collection("logging")
 	findOptions := options.Find()
-	findOptions.SetLimit(1)
 	filter := bson.D{}
 	// Finding multiple documents returns a cursor
 	cur, err := collection.Find(context.TODO(), filter, findOptions)
