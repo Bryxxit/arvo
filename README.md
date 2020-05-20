@@ -40,14 +40,16 @@ hiera_file: "/etc/puppetlabs/puppet/hiera.yaml"
 
 # Api
 The api at the moment only has three endpoints
-+ keys(/:id):
++ v1/keys(/:id):
   + Post: This is where arvo_log logs your keys to
   + Get: You can get all keys for a all hosts or pass a certname to get it for a single host.
-+ hierarchy(/:id): This only has a get method. This either logs your hiera.yaml hierarchy or you can pass a certname to get the translated yaml locations.
-+ clean/:id: This is a get method that will help you clean up hiera data. This just parses trough the keys and hiera data. 
++ v1/hierarchy(/:id): This only has a get method. This either logs your hiera.yaml hierarchy or you can pass a certname to get the translated yaml locations.
++ v1/clean/(:id): This is a get method that will help you clean up hiera data. This just parses trough the keys and hiera data. 
++ v1/clean-all/refresh: this method will create the database entry for the clean-all endpoint
++ v1/clean-all: This endpoint will show all keys that were never called upon. As well as all files never read by then entries found in your log database. You first need to run the refresh endpoint. Creating the entry may take a while if you have a large environement.
 
 ## examples
-keys api
+### keys api
 ```
 curl localhost:8162/v1/keys/certname
 {
@@ -60,7 +62,7 @@ curl localhost:8162/v1/keys/certname
     }
 .....
 ```
-clean api
+### clean api
 ```
 curl localhost:8162/v1/clean/certname
 {
@@ -94,6 +96,26 @@ useful mostly on the node and in a lesser amount platform level to see which key
 safetly be removed.
 + duplicate: At the moment this does not work for hashes but it will for the rest of the data and
 hashes are in the works. This is useful because you can clean up this data and save some disk space or more specific files.
+### clean-all
+```
+curl localhost:8162/v1/clean-all
+{
+    "id": "full",
+    "paths_never_used": [
+        "/hieradata/localhost.yaml",
 
+    ],
+    "keys_never_used": [
+        {
+            "paths": [
+                "/hieradata/os/RedHat.yaml",
+                "/hieradata/common.yaml"
+            ],
+            "key": "test::key"
+        }
+    ]
+}
+.....
+```
 
 
