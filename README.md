@@ -26,14 +26,14 @@ db:
   host: localhost
   port: 27017
   db: arvo
-  password: <TODO>
-  username: <TODO>
+  password: ""
+  username: ""
 key_ttl_minutes: 15
 datadir: "/etc/puppetlabs/code/environment/production/data"
 hiera_file: "/etc/puppetlabs/puppet/hiera.yaml"
 ```
 + puppet: Contains connection info to your puppetdb instance. By default ssl is disabled. You can however configure it.
-+ db: Contains data for your mongodb connection.
++ db: Contains data for your mongodb connection. For auth you'll need to provider user/pass
 + key_ttl_minutes: This is the time to keep logged hiera keys for in minutes. So when the next keys logs all logs older than this value will be removed.
 + datadir: The location of your hiera data.
 + hiera_file: The location of the hiera.yaml file so where your hierarchies are defined.
