@@ -46,7 +46,7 @@ The api at the moment only has three endpoints
 + v1/hierarchy(/:id): This only has a get method. This either logs your hiera.yaml hierarchy or you can pass a certname to get the translated yaml locations.
 + v1/clean/(:id): This is a get method that will help you clean up hiera data. This just parses trough the keys and hiera data. 
 + v1/clean-all/refresh: this method will create the database entry for the clean-all endpoint
-+ v1/clean-all: This endpoint will show all keys that were never called upon. As well as all files never read by then entries found in your log database. You first need to run the refresh endpoint. Creating the entry may take a while if you have a large environement.
++ v1/clean-all: This endpoint will show all keys that were never called upon. As well as all files never read by then entries found in your log database. You first need to run the refresh endpoint. Creating the entry may take a while if you have a large environment.
 
 ## examples
 ### keys api
