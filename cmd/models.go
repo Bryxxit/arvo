@@ -23,13 +23,14 @@ type Conf struct {
 
 // Database holds the database settings to run arvo
 type Database struct {
-	Host       string `yaml:"host"`
-	Port       int    `yaml:"port"`
-	Username   string `yaml:"username"`
-	Password   string `yaml:"password"`
-	Database   string `yaml:"db"`
-	Type       string `yaml:"type"`
-	connection mongo.Client
+	Host         string `yaml:"host"`
+	Port         int    `yaml:"port"`
+	Username     string `yaml:"username"`
+	Password     string `yaml:"password"`
+	Database     string `yaml:"db"`
+	AuthDatabase string `yaml:"auth_db"`
+	Type         string `yaml:"type"`
+	connection   mongo.Client
 }
 
 // GetConf is a function that reads in data from a yaml file into a Conf object
@@ -119,15 +120,21 @@ type YamlMapEntry struct {
 }
 
 // NewClient creates a database connection
-func NewClient(host string, port int, database string) (*mongo.Client, error) {
+func NewClient(db Database) (*mongo.Client, error) {
 	// create the connection uri
 	uri := fmt.Sprintf(`mongodb://%s:%d`,
-		host,
-		port,
+		db.Host,
+		db.Port,
 	)
-
+	clientOptions := options.Client()
+	clientOptions.ApplyURI(uri)
+	if db.Username != "" && db.Password != "" {
+		clientOptions.SetAuth(options.Credential{
+			AuthSource: db.AuthDatabase, Username: db.Username, Password: db.Password,
+		})
+	}
 	// Connect to MongoDB
-	client, err := mongo.Connect(context.TODO(), options.Client().ApplyURI(uri))
+	client, err := mongo.Connect(context.TODO(), clientOptions)
 	if err != nil {
 		log.Println(err)
 		return nil, err

@@ -31,6 +31,9 @@ func main() {
 	if c.DB.Type == "" {
 		c.DB.Type = "mongo"
 	}
+	if c.DB.AuthDatabase == "" {
+		c.DB.AuthDatabase = "admin"
+	}
 
 	if c.DataDir == "" {
 		c.DataDir = "/etc/puppetlabs/code/environment/production/data"
@@ -71,6 +74,7 @@ func main() {
 		v1.GET("/keys/:id", cmd.GetKeysForOneCertnamesEndpoint(c))
 		v1.GET("/hierarchy", cmd.GetHierarchyEndPoint(c))
 		v1.GET("/hierarchy/:id", cmd.GetHierarchyForCertnameEndpoint(c))
+		v1.GET("/clean", cmd.GetKeyLocationsForCertnameEndpoint(c))
 		v1.GET("/clean/:id", cmd.GetKeyLocationsForCertnameEndpoint(c))
 
 	}
@@ -79,36 +83,5 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
-	//GetHierarchyForCertnameEndpoint(c, "lnx-a-rp01-17")
 
 }
-
-//func temp() {
-//	datadir := "/root/Desktop/hieradata"
-//	var c HierarchyYamlFile
-//	c.getConf("/root/Desktop/go-scripts/hiera-clean/example-lookup.yaml")
-//	paths_to_read := []string{}
-//
-//	for _, h := range c.Hierarchy {
-//		if h.Paths != nil {
-//			for _, p := range *h.Paths {
-//				found, _ := regexp.MatchString("(.*)?([%][{].*[}]).*", p)
-//				if found {
-//					facts := make(map[string]string)
-//					facts["mdi_region"] = "emea_be2"
-//					facts["mdi_platform"] = "puppet"
-//					facts["mdi_tier"] = "production"
-//					facts["clientcert"] = "by1acn.eu.seeds.basf.net"
-//					p = ReplaceVariableInPath(p, facts)
-//				}
-//				paths_to_read = append(paths_to_read, datadir+"/"+p)
-//			}
-//		}
-//	}
-//	// we have all paths
-//	values := getAllValuesInYaml(paths_to_read)
-//	SetInLookup(&values)
-//	PrintKeysNotLookedUp(values)
-//	fmt.Println()
-//	printDuplicateEntries(values)
-//}

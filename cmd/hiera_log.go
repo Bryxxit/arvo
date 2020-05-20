@@ -97,7 +97,7 @@ func PostKeyEndpoint(conf Conf) gin.HandlerFunc {
 }
 
 func GetAllCertnameLogEntry(d Database) ([]HieraHostDBEntry, error) {
-	dbConn, err := NewClient(d.Host, d.Port, d.Database)
+	dbConn, err := NewClient(d)
 	arr := []HieraHostDBEntry{}
 	if err != nil {
 		return arr, err
@@ -123,7 +123,7 @@ func GetAllCertnameLogEntry(d Database) ([]HieraHostDBEntry, error) {
 }
 
 func GetOneCertnameLogEntry(d Database, certname string) (*HieraHostDBEntry, error) {
-	dbConn, err := NewClient(d.Host, d.Port, d.Database)
+	dbConn, err := NewClient(d)
 	if err != nil {
 		return nil, err
 	}
@@ -156,7 +156,7 @@ func GetOneCertnameLogEntry(d Database, certname string) (*HieraHostDBEntry, err
 
 func InsertLogEntry(e HieraHostDBEntry, d Database) (*string, error) {
 
-	dbConn, err := NewClient(d.Host, d.Port, d.Database)
+	dbConn, err := NewClient(d)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +197,7 @@ func UpdateLogEntryDB(e HieraHostDBEntry, d Database) (*string, error) {
 		return nil, errors.New("Entry not found")
 	}
 
-	dbConn, err := NewClient(d.Host, d.Port, d.Database)
+	dbConn, err := NewClient(d)
 	if err != nil {
 		return nil, errors.New("Database connection failed")
 	}
