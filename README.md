@@ -115,7 +115,8 @@ curl localhost:8162/v1/clean-all
         }
     ]
 }
-.....
 ```
++ paths never used: Are files that are present in your hiera data but are never called upon. These can be removed if they're not going to be used in the near future?
++ keys never used: This time we got to all entries in the database and see which keys are not used. These keys did not appear in any of the logs and can thus be removed.
 
 
