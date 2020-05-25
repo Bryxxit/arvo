@@ -39,7 +39,7 @@ hiera_file: "/etc/puppetlabs/puppet/hiera.yaml"
 + hiera_file: The location of the hiera.yaml file so where your hierarchies are defined.
 
 # Api
-The api at the moment only has three endpoints
+These are a short description of what the api's do
 + v1/keys(/:id):
   + Post: This is where arvo_log logs your keys to
   + Get: You can get all keys for a all hosts or pass a certname to get it for a single host.
