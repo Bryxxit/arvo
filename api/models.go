@@ -17,6 +17,18 @@ type APIMessage struct {
 	Message string
 }
 
+type APIArrayMessage struct {
+	Success bool
+	Message []string
+}
+
+type HieraDataExample struct {
+	Key  string                 `json:"key"yaml:"key"`
+	Key2 map[string]interface{} `json:"key2"yaml:"key2"`
+	Key3 bool                   `json:"key3"yaml:"key3"`
+	Key4 int                    `json:"key4"yaml:"key4"`
+}
+
 // Conf is the main configuration file for arvo and holds the settings needed to run it
 type Conf struct {
 	DB            Database       `yaml:"db"`

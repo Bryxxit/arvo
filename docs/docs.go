@@ -118,6 +118,185 @@ var doc = `{
                 }
             }
         },
+        "/hiera/path": {
+            "get": {
+                "description": "Getas all the ids of your paths so you can see which hiera paths are available.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all hiera path ids",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIArrayMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/hiera/path/{id}": {
+            "get": {
+                "description": "Get the data from one hiera path",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a hiera path",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Some ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Creates a new hiera path entry if it does not exist yet.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Updates an existing hiera path entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Some ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.HieraDataExample"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new hiera path entry if it does not exist yet.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Creates a hiera path entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Some ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.HieraDataExample"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Deletes a hiera path entry",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Delete a hiera path",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Some ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        },
         "/hierarchy": {
             "get": {
                 "description": "Reads all the hierarchies from your hiera file and returns them.",
@@ -274,6 +453,20 @@ var doc = `{
         }
     },
     "definitions": {
+        "api.APIArrayMessage": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "api.APIMessage": {
             "type": "object",
             "properties": {
@@ -302,6 +495,24 @@ var doc = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "api.HieraDataExample": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "key2": {
+                    "type": "object",
+                    "additionalProperties": true
+                },
+                "key3": {
+                    "type": "boolean"
+                },
+                "key4": {
+                    "type": "integer"
                 }
             }
         },

@@ -2,13 +2,13 @@ package main
 
 import (
 	cmd "arvo/api"
-	docs "arvo/docs"
+	"arvo/docs"
 	"flag"
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/swaggo/files"
-	"github.com/swaggo/gin-swagger"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
 )
 
@@ -64,6 +64,19 @@ func main() {
 		c.Puppet.Port = 8080
 	}
 
+	//m := cmd.YamlFileToStringMap("C:\\Users\\tieyz_admin\\Desktop\\test\\common.yaml")
+	//_, err := cmd.InsertHieraIdEntry("common",m, c.DB)
+	//if err != nil {
+	//	log.Println()
+	//}
+	//
+	//res1 , err := cmd.GetOneHieraEntry(c.DB, "common")
+	//if res1 != nil {
+	//	for key, _ := range *res1 {
+	//		log.Println(key)
+	//	}
+	//
+	//}
 	router := gin.Default()
 	host := fmt.Sprintf("%s:%d", *addr, *port)
 	hostSwag := fmt.Sprintf("%s:%d", *swaggerHost, *port)
@@ -89,12 +102,24 @@ func main() {
 		v1.POST("/keys", cmd.PostKeyEndpoint(c))
 		v1.GET("/keys", cmd.GetKeysForAllCertnamesEndpoint(c))
 		v1.GET("/keys/:id", cmd.GetKeysForOneCertnamesEndpoint(c))
+
+		// we must be able to set our own hierarchies as well to use with the api
 		v1.GET("/hierarchy", cmd.GetHierarchyEndPoint(c))
 		v1.GET("/hierarchy/:id", cmd.GetHierarchyForCertnameEndpoint(c))
+
 		v1.GET("/clean-all/refresh", cmd.CleanAllRefreshEndpoint(c))
 		v1.GET("/clean-all", cmd.CleanAllEndpoint(c))
 		v1.GET("/clean/:id", cmd.GetKeyLocationsForCertnameEndpoint(c))
 
+		v1.GET("/hiera/path", cmd.HieraIdsEndpoint(c))
+		v1.GET("/hiera/path/:id", cmd.HieraIdEndpoint(c))
+		v1.POST("/hiera/path/:id", cmd.HieraIdInsertEndpoint(c))
+		v1.DELETE("/hiera/path/:id", cmd.DeleteHieraIdEndpoint(c))
+		v1.PUT("/hiera/path/:id", cmd.HieraIdUpdateEndpoint(c))
+		// we should also be able to get by key, so we can see occurence of key and data and were it is overridden
+
+		// we should also be able to have a variables endpoint that we can use inside the hiera entries
+		// global variables and path specific overrides, also allow facts?
 	}
 
 	err := router.Run(host)
