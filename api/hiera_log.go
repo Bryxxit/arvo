@@ -1,4 +1,4 @@
-package cmd
+package api
 
 import (
 	"context"
@@ -31,6 +31,15 @@ func parseArray(anArray []interface{}, factTotal *bson.M, factName string) {
 
 }
 
+// GetKeysForAllCertnamesEndpoint example
+// @Summary Get all logged keys for one entry
+// @Description Shows you all the logged hiera keys for one host
+// @Param  id     path   string     true  "Some ID"
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} HieraHostDBEntry
+// @Failure 500 {object} APIMessage "Something went wrong getting the entry"
+// @Router /keys/{id} [get]
 func GetKeysForOneCertnamesEndpoint(d Conf) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		var u1 JSONID
@@ -48,6 +57,14 @@ func GetKeysForOneCertnamesEndpoint(d Conf) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
+// GetKeysForAllCertnamesEndpoint example
+// @Summary Get all logged keys for all hosts
+// @Description Shows you all the logged hiera keys from all the hosts that logged keys.
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} []HieraHostDBEntry
+// @Failure 500 {object} APIMessage "Something went wrong getting the entries"
+// @Router /keys [get]
 func GetKeysForAllCertnamesEndpoint(conf Conf) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		hosts, err := GetAllCertnameLogEntry(conf.DB)
@@ -62,6 +79,15 @@ func GetKeysForAllCertnamesEndpoint(conf Conf) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
+// PostKeyEndpoint example
+// @Summary Log a looked up hiera key
+// @Description This logs a hiera key from puppet. Older log entries will be deleted.
+// @Accept  json
+// @Produce  json
+// @Param   log      body HieraHostDBLogEntry true  "Log"
+// @Success 200 {object} APIMessage	"Inserted one entries"
+// @Failure 500 {object} APIMessage "Something went wrong creating the log entry"
+// @Router /keys [post]
 func PostKeyEndpoint(conf Conf) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		var u HieraHostDBLogEntry

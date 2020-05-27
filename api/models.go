@@ -1,4 +1,4 @@
-package cmd
+package api
 
 import (
 	"context"
@@ -11,6 +11,11 @@ import (
 )
 
 var LAYOUT = "2006-01-02T15:04:05-0700"
+
+type APIMessage struct {
+	Success bool
+	Message string
+}
 
 // Conf is the main configuration file for arvo and holds the settings needed to run it
 type Conf struct {

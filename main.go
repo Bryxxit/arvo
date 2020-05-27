@@ -1,23 +1,32 @@
 package main
 
 import (
-	cmd "arvo/cmd"
+	cmd "arvo/api"
+	docs "arvo/docs"
 	"flag"
+	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
 	"log"
 )
 
 var (
-	addr = flag.String("listen-address", ":8162", "The address to listen on for ")
-	conf = flag.String("conf", "arvo.yaml", "The path to the config file.")
+	addr        = flag.String("listen-address", "0.0.0.0", "The address to listen on for ")
+	swaggerHost = flag.String("swagger-host", "localhost", "The hostname that appears in swagger")
+	port        = flag.Int("port", 8162, "The port to listen on")
+	conf        = flag.String("conf", "arvo.yaml", "The path to the config file.")
 )
+
+// @version 0.0.1
+// @description This is a small api to help you clean up hieradata
+// @BasePath /v1
 
 func main() {
 	flag.Parse()
 	var c cmd.Conf
 	c.GetConf(*conf)
-
 	// set defaults for database
 	if c.DB.Host == "" {
 		c.DB.Host = "localhost"
@@ -56,6 +65,11 @@ func main() {
 	}
 
 	router := gin.Default()
+	host := fmt.Sprintf("%s:%d", *addr, *port)
+	hostSwag := fmt.Sprintf("%s:%d", *swaggerHost, *port)
+
+	docs.SwaggerInfo.Title = "Arvo is puppet hiera helper api"
+	docs.SwaggerInfo.Host = hostSwag
 
 	router.Use(cors.New(cors.Config{
 		AllowMethods:     []string{"GET", "POST", "OPTIONS", "PUT", "DELETE"},
@@ -66,9 +80,12 @@ func main() {
 		AllowOriginFunc:  func(origin string) bool { return true },
 		MaxAge:           86400,
 	}))
-	// Simple group: v1
+
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
 	v1 := router.Group("/v1")
 	{
+
 		v1.POST("/keys", cmd.PostKeyEndpoint(c))
 		v1.GET("/keys", cmd.GetKeysForAllCertnamesEndpoint(c))
 		v1.GET("/keys/:id", cmd.GetKeysForOneCertnamesEndpoint(c))
@@ -80,7 +97,7 @@ func main() {
 
 	}
 
-	err := router.Run(*addr)
+	err := router.Run(host)
 	if err != nil {
 		log.Fatal(err.Error())
 	}

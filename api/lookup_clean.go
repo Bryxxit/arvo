@@ -1,4 +1,4 @@
-package cmd
+package api
 
 import (
 	"context"
@@ -24,6 +24,15 @@ type InLogAndHieraEntry struct {
 	Paths []string `json:"paths"yaml:"paths"`
 }
 
+// GetKeyLocationsForCertnameEndpoint example
+// @Summary Get the clean result for a certname
+// @Description Looks trough you logged entries and hierarchy files to find unused keys etc. That will help you clean up hiera data.
+// @Param  id     path   string     true  "Some ID"
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} YamlCleanResult ""
+// @Failure 500 {object} APIMessage "Something went wrong getting the entry"
+// @Router /clean/{id} [get]
 func GetKeyLocationsForCertnameEndpoint(conf Conf) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		var u1 JSONID
@@ -139,6 +148,15 @@ func GetKeyLocationsForCertnameEndpoint(conf Conf) gin.HandlerFunc {
 	return gin.HandlerFunc(fn)
 }
 
+// CleanAllEndpoint example
+// @Summary Returns the clean all result if it has been generated
+// @Description After the resresh function has been done. You can call this method for the result.
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} CleanAllResult "The clean all result."
+// @Failure 404 {object} APIMessage "No entry was found run the /v1/clean-all/refresh endpoint first"
+// @Failure 500 {object} APIMessage "Something went wrong getting the entries"
+// @Router /clean-all [get]
 func CleanAllEndpoint(conf Conf) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		res, err := GetFullCleanResultEntry(conf.DB)
@@ -147,7 +165,7 @@ func CleanAllEndpoint(conf Conf) gin.HandlerFunc {
 			if err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error()})
 			} else {
-				c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": "No entry was found run the /v1/clean-all/refresh endpoint first"})
+				c.JSON(http.StatusNotFound, gin.H{"success": false, "message": "No entry was found run the /v1/clean-all/refresh endpoint first"})
 
 			}
 		} else {
@@ -160,6 +178,14 @@ func CleanAllEndpoint(conf Conf) gin.HandlerFunc {
 	return fn
 }
 
+// CleanAllRefreshEndpoint example
+// @Summary Starts generating an entry for the clean all result.
+// @Description As parsing your whole environment may take a while this job starts doing the process in the background. You will get a json that that says the process has started
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} APIMessage "Gathering result may take a while check the clean endpoint for the result."
+// @Failure 500 {object} APIMessage "Something went wrong getting the entries"
+// @Router /clean-all/refresh [get]
 func CleanAllRefreshEndpoint(conf Conf) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		go func() {

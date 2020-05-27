@@ -1,0 +1,394 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a small api to help you clean up hieradata",
+        "contact": {},
+        "license": {},
+        "version": "0.0.1"
+    },
+    "basePath": "/v1",
+    "paths": {
+        "/clean-all": {
+            "get": {
+                "description": "After the resresh function has been done. You can call this method for the result.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Returns the clean all result if it has been generated",
+                "responses": {
+                    "200": {
+                        "description": "The clean all result.",
+                        "schema": {
+                            "$ref": "#/definitions/api.CleanAllResult"
+                        }
+                    },
+                    "404": {
+                        "description": "No entry was found run the /v1/clean-all/refresh endpoint first",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entries",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/clean-all/refresh": {
+            "get": {
+                "description": "As parsing your whole environment may take a while this job starts doing the process in the background. You will get a json that that says the process has started",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Starts generating an entry for the clean all result.",
+                "responses": {
+                    "200": {
+                        "description": "Gathering result may take a while check the clean endpoint for the result.",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entries",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/clean/{id}": {
+            "get": {
+                "description": "Looks trough you logged entries and hierarchy files to find unused keys etc. That will help you clean up hiera data.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the clean result for a certname",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Some ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.YamlCleanResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/hierarchy": {
+            "get": {
+                "description": "Reads all the hierarchies from your hiera file and returns them.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Shows the hierarchies in your hiera.yaml file",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.HierarchyResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/hierarchy/{id}": {
+            "get": {
+                "description": "Transaltes the hierarchies in your hiera file into actual paths. By getting the facts from puppetdb.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get the hierachies for a specific host.",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Some ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.HierarchyResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/keys": {
+            "get": {
+                "description": "Shows you all the logged hiera keys from all the hosts that logged keys.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all logged keys for all hosts",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/api.HieraHostDBEntry"
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entries",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "This logs a hiera key from puppet. Older log entries will be deleted.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Log a looked up hiera key",
+                "parameters": [
+                    {
+                        "description": "Log",
+                        "name": "log",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.HieraHostDBLogEntry"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Inserted one entries",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong creating the log entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/keys/{id}": {
+            "get": {
+                "description": "Shows you all the logged hiera keys for one host",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all logged keys for one entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Some ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.HieraHostDBEntry"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "api.APIMessage": {
+            "type": "object",
+            "properties": {
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "api.CleanAllResult": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "keys_never_used": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api.YamlKeyPath"
+                    }
+                },
+                "paths_never_used": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "api.HieraHostDBEntry": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "keys": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api.HieraHostDBLogEntry"
+                    }
+                }
+            }
+        },
+        "api.HieraHostDBLogEntry": {
+            "type": "object",
+            "properties": {
+                "certname": {
+                    "type": "string"
+                },
+                "date_string": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                }
+            }
+        },
+        "api.HierarchyResult": {
+            "type": "object",
+            "properties": {
+                "paths": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "vars": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "api.InLogAndHieraEntry": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "paths": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "api.YamlCleanResult": {
+            "type": "object",
+            "properties": {
+                "duplicates": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api.InLogAndHieraEntry"
+                    }
+                },
+                "in_hiera_not_in_log": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api.InLogAndHieraEntry"
+                    }
+                },
+                "in_log_and_hiera": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/api.InLogAndHieraEntry"
+                    }
+                },
+                "in_log_not_in_hiera": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "api.YamlKeyPath": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "paths": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

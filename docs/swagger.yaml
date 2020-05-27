@@ -1,0 +1,257 @@
+basePath: /v1
+definitions:
+  api.APIMessage:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  api.CleanAllResult:
+    properties:
+      id:
+        type: string
+      keys_never_used:
+        items:
+          $ref: '#/definitions/api.YamlKeyPath'
+        type: array
+      paths_never_used:
+        items:
+          type: string
+        type: array
+    type: object
+  api.HieraHostDBEntry:
+    properties:
+      id:
+        type: string
+      keys:
+        items:
+          $ref: '#/definitions/api.HieraHostDBLogEntry'
+        type: array
+    type: object
+  api.HieraHostDBLogEntry:
+    properties:
+      certname:
+        type: string
+      date_string:
+        type: string
+      key:
+        type: string
+    type: object
+  api.HierarchyResult:
+    properties:
+      paths:
+        items:
+          type: string
+        type: array
+      vars:
+        items:
+          type: string
+        type: array
+    type: object
+  api.InLogAndHieraEntry:
+    properties:
+      key:
+        type: string
+      paths:
+        items:
+          type: string
+        type: array
+    type: object
+  api.YamlCleanResult:
+    properties:
+      duplicates:
+        items:
+          $ref: '#/definitions/api.InLogAndHieraEntry'
+        type: array
+      in_hiera_not_in_log:
+        items:
+          $ref: '#/definitions/api.InLogAndHieraEntry'
+        type: array
+      in_log_and_hiera:
+        items:
+          $ref: '#/definitions/api.InLogAndHieraEntry'
+        type: array
+      in_log_not_in_hiera:
+        items:
+          type: string
+        type: array
+    type: object
+  api.YamlKeyPath:
+    properties:
+      key:
+        type: string
+      paths:
+        items:
+          type: string
+        type: array
+    type: object
+info:
+  contact: {}
+  description: This is a small api to help you clean up hieradata
+  license: {}
+  version: 0.0.1
+paths:
+  /clean-all:
+    get:
+      consumes:
+      - application/json
+      description: After the resresh function has been done. You can call this method for the result.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: The clean all result.
+          schema:
+            $ref: '#/definitions/api.CleanAllResult'
+        "404":
+          description: No entry was found run the /v1/clean-all/refresh endpoint first
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+        "500":
+          description: Something went wrong getting the entries
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Returns the clean all result if it has been generated
+  /clean-all/refresh:
+    get:
+      consumes:
+      - application/json
+      description: As parsing your whole environment may take a while this job starts doing the process in the background. You will get a json that that says the process has started
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Gathering result may take a while check the clean endpoint for the result.
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+        "500":
+          description: Something went wrong getting the entries
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Starts generating an entry for the clean all result.
+  /clean/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Looks trough you logged entries and hierarchy files to find unused keys etc. That will help you clean up hiera data.
+      parameters:
+      - description: Some ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.YamlCleanResult'
+        "500":
+          description: Something went wrong getting the entry
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Get the clean result for a certname
+  /hierarchy:
+    get:
+      consumes:
+      - application/json
+      description: Reads all the hierarchies from your hiera file and returns them.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.HierarchyResult'
+      summary: Shows the hierarchies in your hiera.yaml file
+  /hierarchy/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Transaltes the hierarchies in your hiera file into actual paths. By getting the facts from puppetdb.
+      parameters:
+      - description: Some ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.HierarchyResult'
+        "500":
+          description: Something went wrong getting the entry
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Get the hierachies for a specific host.
+  /keys:
+    get:
+      consumes:
+      - application/json
+      description: Shows you all the logged hiera keys from all the hosts that logged keys.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/api.HieraHostDBEntry'
+            type: array
+        "500":
+          description: Something went wrong getting the entries
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Get all logged keys for all hosts
+    post:
+      consumes:
+      - application/json
+      description: This logs a hiera key from puppet. Older log entries will be deleted.
+      parameters:
+      - description: Log
+        in: body
+        name: log
+        required: true
+        schema:
+          $ref: '#/definitions/api.HieraHostDBLogEntry'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Inserted one entries
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+        "500":
+          description: Something went wrong creating the log entry
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Log a looked up hiera key
+  /keys/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Shows you all the logged hiera keys for one host
+      parameters:
+      - description: Some ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.HieraHostDBEntry'
+        "500":
+          description: Something went wrong getting the entry
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Get all logged keys for one entry
+swagger: "2.0"

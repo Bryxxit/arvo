@@ -9,8 +9,13 @@ The default location of arvo is http://localhost:8162
 ## command line
 On the command line you can configure two parmaters. The port it is running on and the location of the configuration file.
 ```
-arvo -listen-address :8162 -conf arvo.yaml
+arvo -listen-address 0.0.0.0 -port 8162 -swagger-host localhost -conf arvo.yaml
 ```
++ listen-address: This is the address the application will listen on. If you want to limit it by ip and such.
++ port: The port the application will run on by default 8162
++ swagger-host: Is the hostname that appears in the swagger documentation
++ conf: The location of the config file
+
 ## Configuration file
 The configuration file is a yaml based file following things can be configured.
 ```
@@ -39,6 +44,7 @@ hiera_file: "/etc/puppetlabs/puppet/hiera.yaml"
 + hiera_file: The location of the hiera.yaml file so where your hierarchies are defined.
 
 # Api
+We have now integrated swagger into the project and it should be available at: http://localhost:8162/swagger/index.html
 These are a short description of what the api's do
 + v1/keys(/:id):
   + Post: This is where arvo_log logs your keys to

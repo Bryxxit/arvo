@@ -1,4 +1,4 @@
-package cmd
+package api
 
 import (
 	"errors"
@@ -12,6 +12,13 @@ import (
 	"strings"
 )
 
+// GetHierarchyEndPoint example
+// @Summary Shows the hierarchies in your hiera.yaml file
+// @Description Reads all the hierarchies from your hiera file and returns them.
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} HierarchyResult	""
+// @Router /hierarchy [get]
 func GetHierarchyEndPoint(conf Conf) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		defer c.Done()
@@ -58,6 +65,15 @@ func GetPathsAndVarsInHierarchy(conf Conf) HierarchyResult {
 	return h
 }
 
+// GetHierarchyForCertnameEndpoint example
+// @Summary Get the hierachies for a specific host.
+// @Description Transaltes the hierarchies in your hiera file into actual paths. By getting the facts from puppetdb.
+// @Param  id     path   string     true  "Some ID"
+// @Accept  json
+// @Produce  json
+// @Success 200 {object} HierarchyResult	""
+// @Failure 500 {object} APIMessage "Something went wrong getting the entry"
+// @Router /hierarchy/{id} [get]
 func GetHierarchyForCertnameEndpoint(conf Conf) gin.HandlerFunc {
 	fn := func(c *gin.Context) {
 		var u1 JSONID
