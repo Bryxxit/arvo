@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"reflect"
 	"runtime"
 	"strings"
 )
@@ -112,26 +113,54 @@ func GetKeyLocationsForCertnameEndpoint(conf Conf) gin.HandlerFunc {
 					for _, e2 := range entries {
 						if e1.Path != e2.Path {
 							for key2, val2 := range e2.Content {
+								check_equal := false
 								switch val1.(type) {
 								case map[string]interface{}:
-									log.Println("skipping hashes for now")
-								default:
-									if key1 == key2 && val1 == val2 {
-										check1 := false
-										for index, e3 := range res.DuplicateData {
-											if e3.Key == key1 {
-												if !stringInSlice(e1.Path, res.DuplicateData[index].Paths) {
-													res.DuplicateData[index].Paths = append(res.DuplicateData[index].Paths, e1.Path)
-												}
-												check1 = true
+									if key1 == key2 && reflect.ValueOf(val2).Kind() == reflect.Map {
+										m1 := val1.(map[string]interface{})
+										m2 := val2.(map[string]interface{})
+										eq := reflect.DeepEqual(m1, m2)
+										if eq {
+											check_equal = true
+										}
+									}
+								case []interface{}:
+									if key1 == key2 && len(val1.([]interface{})) == len(val2.([]interface{})) {
+										// now we need to check if each value is the same
+										a1 := val1.([]interface{})
+										a2 := val2.([]interface{})
+										check2 := true
+										for indexA, valA := range a1 {
+											if valA != a2[indexA] {
+												check2 = false
 											}
 										}
-										if !check1 {
-											res.DuplicateData = append(res.DuplicateData, InLogAndHieraEntry{
-												Key:   key1,
-												Paths: []string{e1.Path},
-											})
+
+										if check2 {
+											check_equal = true
 										}
+									}
+								default:
+									if key1 == key2 && val1 == val2 {
+										check_equal = true
+									}
+								}
+
+								if check_equal {
+									check1 := false
+									for index, e3 := range res.DuplicateData {
+										if e3.Key == key1 {
+											if !stringInSlice(e1.Path, res.DuplicateData[index].Paths) {
+												res.DuplicateData[index].Paths = append(res.DuplicateData[index].Paths, e1.Path)
+											}
+											check1 = true
+										}
+									}
+									if !check1 {
+										res.DuplicateData = append(res.DuplicateData, InLogAndHieraEntry{
+											Key:   key1,
+											Paths: []string{e1.Path},
+										})
 									}
 								}
 							}
