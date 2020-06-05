@@ -19,7 +19,7 @@ var (
 	conf        = flag.String("conf", "arvo.yaml", "The path to the config file.")
 )
 
-// @version 0.0.1
+// @version 0.0.3
 // @description This is a small api to help you clean up hieradata
 // @BasePath /v1
 
@@ -64,19 +64,12 @@ func main() {
 		c.Puppet.Port = 8080
 	}
 
-	//m := cmd.YamlFileToStringMap("C:\\Users\\tieyz_admin\\Desktop\\test\\common.yaml")
-	//_, err := cmd.InsertHieraIdEntry("common",m, c.DB)
-	//if err != nil {
-	//	log.Println()
-	//}
-	//
-	//res1 , err := cmd.GetOneHieraEntry(c.DB, "common")
-	//if res1 != nil {
-	//	for key, _ := range *res1 {
-	//		log.Println(key)
-	//	}
-	//
-	//}
+	if len(c.Hierarchy) == 0 {
+		c.Hierarchy = []string{
+			"%{hostname}", "%{os.family}", "%{environment}", "common",
+		}
+	}
+
 	router := gin.Default()
 	host := fmt.Sprintf("%s:%d", *addr, *port)
 	hostSwag := fmt.Sprintf("%s:%d", *swaggerHost, *port)
@@ -116,10 +109,18 @@ func main() {
 		v1.POST("/hiera/path/:id", cmd.HieraIdInsertEndpoint(c))
 		v1.DELETE("/hiera/path/:id", cmd.DeleteHieraIdEndpoint(c))
 		v1.PUT("/hiera/path/:id", cmd.HieraIdUpdateEndpoint(c))
-		// we should also be able to get by key, so we can see occurence of key and data and were it is overridden
 
-		// we should also be able to have a variables endpoint that we can use inside the hiera entries
-		// global variables and path specific overrides, also allow facts?
+		v1.GET("/hiera/variable/hierarchy", cmd.VariableIdsEndpoint(c))
+		v1.GET("/hiera/variable/hierarchy/:id", cmd.VariableIdEndpoint(c))
+
+		v1.GET("/hiera/variable/path", cmd.VariablePathIdsEndpoint(c))
+		v1.GET("/hiera/variable/path/:id", cmd.VariablePathIdEndpoint(c))
+		v1.POST("/hiera/variable/path/:id", cmd.VariablePathIdInsertEndpoint(c))
+		v1.DELETE("/hiera/variable/path/:id", cmd.DeleteVariablePathIdEndpoint(c))
+		v1.PUT("/hiera/variable/path/:id", cmd.VariablePathIdUpdateEndpoint(c))
+
+		v1.GET("/hiera/value/:id/:certname", cmd.HieraValueIdEndpoint(c))
+
 	}
 
 	err := router.Run(host)

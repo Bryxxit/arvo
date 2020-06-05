@@ -103,16 +103,21 @@ func GetHierarchyForCertname(conf Conf, certname string) (*HierarchyResult, erro
 		for _, v := range h.Variables {
 			for index, p := range h.Paths {
 				if val, ok := facts[v]; ok {
-					op1 := fmt.Sprintf("%%{::%s}", v)
-					op2 := fmt.Sprintf("%%{%s}", v)
-					str := strings.ReplaceAll(p, op1, val.(string))
-					str = strings.ReplaceAll(str, op2, val.(string))
+					str := ReplaceFactInString(p, v, val.(string))
 					h.Paths[index] = str
 				}
 			}
 		}
 		return &h, nil
 	}
+}
+
+func ReplaceFactInString(path string, factName string, value string) string {
+	op1 := fmt.Sprintf("%%{::%s}", factName)
+	op2 := fmt.Sprintf("%%{%s}", factName)
+	str := strings.ReplaceAll(path, op1, value)
+	str = strings.ReplaceAll(str, op2, value)
+	return str
 }
 
 func GetFactsMapForCertName(conf Conf, certname string) map[string]interface{} {

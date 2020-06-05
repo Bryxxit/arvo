@@ -36,6 +36,7 @@ type Conf struct {
 	DataDir       string         `yaml:"datadir"`
 	Puppet        PuppetDBConfig `yaml:"puppet"`
 	HieraFile     string         `yaml:"hiera_file"`
+	Hierarchy     []string       `yaml:"hierarchy"`
 }
 
 // Database holds the database settings to run arvo
@@ -67,6 +68,11 @@ func (c *Conf) GetConf(configFile string) *Conf {
 
 type JSONID struct {
 	ID string `uri:"id" binding:"required,uuid"`
+}
+
+type HIERAKEYID struct {
+	ID       string `uri:"id" binding:"required"`
+	Certname string `uri:"certname" binding:"required"`
 }
 
 type PuppetDBConfig struct {

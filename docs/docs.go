@@ -120,7 +120,7 @@ var doc = `{
         },
         "/hiera/path": {
             "get": {
-                "description": "Getas all the ids of your paths so you can see which hiera paths are available.",
+                "description": "Gets all the ids of your paths so you can see which hiera paths are available.",
                 "consumes": [
                     "application/json"
                 ],
@@ -290,6 +290,256 @@ var doc = `{
                     },
                     "500": {
                         "description": "Something went wrong getting the entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/hiera/value/{id}/{certname}": {
+            "get": {
+                "description": "Get the data from one hiera path",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a hiera path",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Some key",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Some certname",
+                        "name": "certname",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/hiera/variable/hierarchy": {
+            "get": {
+                "description": "Gets all the variable paths that are in your configuration file.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all variable paths in your configuration",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIArrayMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/hiera/variable/hierarchy/{id}": {
+            "get": {
+                "description": "Translates the",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all variable paths for a specific host",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Some ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.HierarchyResult"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/hiera/variable/path": {
+            "get": {
+                "description": "Gets all the ids of your your variable paths",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get all variable path ids",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIArrayMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            }
+        },
+        "/hiera/variable/path/{id}": {
+            "get": {
+                "description": "Get the data from one hiera path",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get a hiera path",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Some ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
+                    },
+                    "500": {
+                        "description": "Something went wrong getting the entry",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Creates a new variable path entry if it does not exist yet.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Updates an existing variable path entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Some ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.HieraDataExample"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Creates a new variable path entry if it does not exist yet",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Creates a variable path entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Some ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "data",
+                        "name": "data",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/api.HieraDataExample"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/api.APIMessage"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/api.APIMessage"
                         }
@@ -632,7 +882,7 @@ type swaggerInfo struct {
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
-	Version:     "0.0.1",
+	Version:     "0.0.3",
 	Host:        "",
 	BasePath:    "/v1",
 	Schemes:     []string{},

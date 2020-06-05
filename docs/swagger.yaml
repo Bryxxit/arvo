@@ -111,7 +111,7 @@ info:
   contact: {}
   description: This is a small api to help you clean up hieradata
   license: {}
-  version: 0.0.1
+  version: 0.0.3
 paths:
   /clean-all:
     get:
@@ -178,7 +178,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Getas all the ids of your paths so you can see which hiera paths are available.
+      description: Gets all the ids of your paths so you can see which hiera paths are available.
       produces:
       - application/json
       responses:
@@ -293,6 +293,172 @@ paths:
           schema:
             $ref: '#/definitions/api.APIMessage'
       summary: Updates an existing hiera path entry
+  /hiera/value/{id}/{certname}:
+    get:
+      consumes:
+      - application/json
+      description: Get the data from one hiera path
+      parameters:
+      - description: Some key
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Some certname
+        in: path
+        name: certname
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Something went wrong getting the entry
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Get a hiera path
+  /hiera/variable/hierarchy:
+    get:
+      consumes:
+      - application/json
+      description: Gets all the variable paths that are in your configuration file.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.APIArrayMessage'
+        "500":
+          description: Something went wrong getting the entry
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Get all variable paths in your configuration
+  /hiera/variable/hierarchy/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Translates the
+      parameters:
+      - description: Some ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.HierarchyResult'
+        "500":
+          description: Something went wrong getting the entry
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Get all variable paths for a specific host
+  /hiera/variable/path:
+    get:
+      consumes:
+      - application/json
+      description: Gets all the ids of your your variable paths
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.APIArrayMessage'
+        "500":
+          description: Something went wrong getting the entry
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Get all variable path ids
+  /hiera/variable/path/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get the data from one hiera path
+      parameters:
+      - description: Some ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties: true
+            type: object
+        "500":
+          description: Something went wrong getting the entry
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Get a hiera path
+    post:
+      consumes:
+      - application/json
+      description: Creates a new variable path entry if it does not exist yet
+      parameters:
+      - description: Some ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.HieraDataExample'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Creates a variable path entry
+    put:
+      consumes:
+      - application/json
+      description: Creates a new variable path entry if it does not exist yet.
+      parameters:
+      - description: Some ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/api.HieraDataExample'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api.APIMessage'
+      summary: Updates an existing variable path entry
   /hierarchy:
     get:
       consumes:
