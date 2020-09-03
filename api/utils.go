@@ -4,11 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"log"
 	"math"
+	"net/http"
 	"os"
 	"reflect"
 	"strings"
@@ -170,6 +172,13 @@ func DoesFileExist(filename string) bool {
 		return false
 	}
 	return !info.IsDir()
+}
+
+func DummyEndpoint() gin.HandlerFunc {
+	fn := func(c *gin.Context) {
+		c.JSON(http.StatusOK, gin.H{})
+	}
+	return gin.HandlerFunc(fn)
 }
 
 func GetDiffBetweenDates(date2 *string) int {

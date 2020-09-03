@@ -37,6 +37,7 @@ type Conf struct {
 	Puppet        PuppetDBConfig `yaml:"puppet"`
 	HieraFile     string         `yaml:"hiera_file"`
 	Hierarchy     []string       `yaml:"hierarchy"`
+	Dummy         bool           `yaml:"dummy"`
 }
 
 // Database holds the database settings to run arvo

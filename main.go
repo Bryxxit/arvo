@@ -87,39 +87,72 @@ func main() {
 		MaxAge:           86400,
 	}))
 
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	if c.Dummy != true {
+		router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+		v1 := router.Group("/v1")
+		{
 
-	v1 := router.Group("/v1")
-	{
+			v1.POST("/keys", cmd.PostKeyEndpoint(c))
+			v1.GET("/keys", cmd.GetKeysForAllCertnamesEndpoint(c))
+			v1.GET("/keys/:id", cmd.GetKeysForOneCertnamesEndpoint(c))
 
-		v1.POST("/keys", cmd.PostKeyEndpoint(c))
-		v1.GET("/keys", cmd.GetKeysForAllCertnamesEndpoint(c))
-		v1.GET("/keys/:id", cmd.GetKeysForOneCertnamesEndpoint(c))
+			// we must be able to set our own hierarchies as well to use with the api
+			v1.GET("/hierarchy", cmd.GetHierarchyEndPoint(c))
+			v1.GET("/hierarchy/:id", cmd.GetHierarchyForCertnameEndpoint(c))
 
-		// we must be able to set our own hierarchies as well to use with the api
-		v1.GET("/hierarchy", cmd.GetHierarchyEndPoint(c))
-		v1.GET("/hierarchy/:id", cmd.GetHierarchyForCertnameEndpoint(c))
+			v1.GET("/clean-all/refresh", cmd.CleanAllRefreshEndpoint(c))
+			v1.GET("/clean-all", cmd.CleanAllEndpoint(c))
+			v1.GET("/clean/:id", cmd.GetKeyLocationsForCertnameEndpoint(c))
 
-		v1.GET("/clean-all/refresh", cmd.CleanAllRefreshEndpoint(c))
-		v1.GET("/clean-all", cmd.CleanAllEndpoint(c))
-		v1.GET("/clean/:id", cmd.GetKeyLocationsForCertnameEndpoint(c))
+			v1.GET("/hiera/path", cmd.HieraIdsEndpoint(c))
+			v1.GET("/hiera/path/:id", cmd.HieraIdEndpoint(c))
+			v1.POST("/hiera/path/:id", cmd.HieraIdInsertEndpoint(c))
+			v1.DELETE("/hiera/path/:id", cmd.DeleteHieraIdEndpoint(c))
+			v1.PUT("/hiera/path/:id", cmd.HieraIdUpdateEndpoint(c))
 
-		v1.GET("/hiera/path", cmd.HieraIdsEndpoint(c))
-		v1.GET("/hiera/path/:id", cmd.HieraIdEndpoint(c))
-		v1.POST("/hiera/path/:id", cmd.HieraIdInsertEndpoint(c))
-		v1.DELETE("/hiera/path/:id", cmd.DeleteHieraIdEndpoint(c))
-		v1.PUT("/hiera/path/:id", cmd.HieraIdUpdateEndpoint(c))
+			v1.GET("/hiera/variable/hierarchy", cmd.VariableIdsEndpoint(c))
+			v1.GET("/hiera/variable/hierarchy/:id", cmd.VariableIdEndpoint(c))
 
-		v1.GET("/hiera/variable/hierarchy", cmd.VariableIdsEndpoint(c))
-		v1.GET("/hiera/variable/hierarchy/:id", cmd.VariableIdEndpoint(c))
+			v1.GET("/hiera/variable/path", cmd.VariablePathIdsEndpoint(c))
+			v1.GET("/hiera/variable/path/:id", cmd.VariablePathIdEndpoint(c))
+			v1.POST("/hiera/variable/path/:id", cmd.VariablePathIdInsertEndpoint(c))
+			v1.DELETE("/hiera/variable/path/:id", cmd.DeleteVariablePathIdEndpoint(c))
+			v1.PUT("/hiera/variable/path/:id", cmd.VariablePathIdUpdateEndpoint(c))
 
-		v1.GET("/hiera/variable/path", cmd.VariablePathIdsEndpoint(c))
-		v1.GET("/hiera/variable/path/:id", cmd.VariablePathIdEndpoint(c))
-		v1.POST("/hiera/variable/path/:id", cmd.VariablePathIdInsertEndpoint(c))
-		v1.DELETE("/hiera/variable/path/:id", cmd.DeleteVariablePathIdEndpoint(c))
-		v1.PUT("/hiera/variable/path/:id", cmd.VariablePathIdUpdateEndpoint(c))
+			v1.GET("/hiera/value/:id/:certname", cmd.HieraValueIdEndpoint(c))
 
-		v1.GET("/hiera/value/:id/:certname", cmd.HieraValueIdEndpoint(c))
+		}
+	} else {
+		v1 := router.Group("/v1")
+		{
+			v1.POST("/keys", cmd.DummyEndpoint())
+			v1.GET("/keys", cmd.DummyEndpoint())
+			v1.GET("/keys/:id", cmd.DummyEndpoint())
+
+			// we must be able to set our own hierarchies as well to use with the api
+			v1.GET("/hierarchy", cmd.DummyEndpoint())
+			v1.GET("/hierarchy/:id", cmd.DummyEndpoint())
+
+			v1.GET("/clean-all/refresh", cmd.DummyEndpoint())
+			v1.GET("/clean-all", cmd.DummyEndpoint())
+			v1.GET("/clean/:id", cmd.DummyEndpoint())
+
+			v1.GET("/hiera/path", cmd.DummyEndpoint())
+			v1.GET("/hiera/path/:id", cmd.DummyEndpoint())
+			v1.POST("/hiera/path/:id", cmd.DummyEndpoint())
+			v1.DELETE("/hiera/path/:id", cmd.DummyEndpoint())
+			v1.PUT("/hiera/path/:id", cmd.DummyEndpoint())
+
+			v1.GET("/hiera/variable/hierarchy", cmd.DummyEndpoint())
+			v1.GET("/hiera/variable/hierarchy/:id", cmd.DummyEndpoint())
+
+			v1.GET("/hiera/variable/path", cmd.DummyEndpoint())
+			v1.GET("/hiera/variable/path/:id", cmd.DummyEndpoint())
+			v1.POST("/hiera/variable/path/:id", cmd.DummyEndpoint())
+			v1.DELETE("/hiera/variable/path/:id", cmd.DummyEndpoint())
+			v1.PUT("/hiera/variable/path/:id", cmd.DummyEndpoint())
+			v1.GET("/hiera/value/:id/:certname", cmd.DummyEndpoint())
+		}
 
 	}
 
