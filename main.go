@@ -16,6 +16,7 @@ var (
 	addr        = flag.String("listen-address", "0.0.0.0", "The address to listen on for ")
 	swaggerHost = flag.String("swagger-host", "localhost", "The hostname that appears in swagger")
 	port        = flag.Int("port", 8162, "The port to listen on")
+	silent      = flag.Bool("silent", false, "Use if you don't want it to output access log messages.")
 	conf        = flag.String("conf", "arvo.yaml", "The path to the config file.")
 )
 
@@ -73,6 +74,11 @@ func main() {
 	router := gin.Default()
 	host := fmt.Sprintf("%s:%d", *addr, *port)
 	hostSwag := fmt.Sprintf("%s:%d", *swaggerHost, *port)
+
+	if silent != nil && *silent {
+		router.RouterGroup.Handlers = router.RouterGroup.Handlers[0:0]
+		router.Use(gin.Recovery())
+	}
 
 	docs.SwaggerInfo.Title = "Arvo is puppet hiera helper api"
 	docs.SwaggerInfo.Host = hostSwag
