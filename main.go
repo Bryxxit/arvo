@@ -10,6 +10,7 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"log"
+	"time"
 )
 
 var (
@@ -69,6 +70,13 @@ func main() {
 		c.Hierarchy = []string{
 			"%{hostname}", "%{os.family}", "%{environment}", "common",
 		}
+	}
+
+	if c.Url == "" {
+		c.Url = "http://localhost:8086/"
+	}
+	if c.Bucket == "" {
+		c.Bucket = "Arvo"
 	}
 
 	router := gin.Default()
@@ -160,6 +168,14 @@ func main() {
 			v1.GET("/hiera/value/:id/:certname", cmd.DummyEndpoint())
 		}
 
+	}
+
+	if c.UseInflux {
+		go func() {
+			cmd.ExportToInfluxDB(c)
+			time.Sleep(1 * time.Hour)
+
+		}()
 	}
 
 	err := router.Run(host)

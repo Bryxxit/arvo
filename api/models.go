@@ -38,6 +38,9 @@ type Conf struct {
 	HieraFile     string         `yaml:"hiera_file"`
 	Hierarchy     []string       `yaml:"hierarchy"`
 	Dummy         bool           `yaml:"dummy"`
+	UseInflux     bool           `yaml:"use_influx"`
+	Url           string         `yaml:"url"`
+	Bucket        string         `yaml:"bucket"`
 }
 
 // Database holds the database settings to run arvo

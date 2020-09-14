@@ -39,95 +39,108 @@ func GetKeyLocationsForCertnameEndpoint(conf Conf) gin.HandlerFunc {
 		var u1 JSONID
 		c.ShouldBindUri(&u1)
 		defer c.Done()
-		//s, err := GetOneCertnameLogEntry(conf.DB, u1.ID)
-		hierarchy, err := GetHierarchyForCertname(conf, u1.ID)
+		res, err := CleanUpResultLookupForOneCertname(conf, u1.ID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"success": false, "message": err.Error()})
 
 		} else {
-			entries := []YamlMapEntry{}
+			c.JSON(http.StatusOK, *res)
+		}
 
-			for _, p := range hierarchy.Paths {
-				e := GetYamlMapEntryFromPath(p)
-				entries = append(entries, e)
-			}
+	}
+	return gin.HandlerFunc(fn)
+}
 
-			loggedKeys, err := GetOneCertnameLogEntry(conf.DB, u1.ID)
-			res := YamlCleanResult{
-				InLogNotInHiera: []string{},
-				InLogAndHiera:   []InLogAndHieraEntry{},
-				InHieraNotInLog: []InLogAndHieraEntry{},
-				DuplicateData:   []InLogAndHieraEntry{},
-			}
-			if err == nil {
-				// first get keys in log but not in hiera and in log and in hiera
-				for _, e1 := range loggedKeys.Entries {
-					check0 := false
-					for _, e2 := range entries {
-						if IsKeyInMap(e1.Key, e2.Content) || IsKeyInMap(e1.Key, e2.Flat) {
-							check0 = true
-							check1 := false
-							for index, e3 := range res.InLogAndHiera {
-								if e3.Key == e1.Key {
-									res.InLogAndHiera[index].Paths = append(res.InLogAndHiera[index].Paths, e2.Path)
-									check1 = true
-								}
-							}
-							if !check1 {
-								res.InLogAndHiera = append(res.InLogAndHiera, InLogAndHieraEntry{
-									Key:   e1.Key,
-									Paths: []string{e2.Path},
-								})
-							}
-						}
-					}
-					if !check0 {
-						res.InLogNotInHiera = append(res.InLogNotInHiera, e1.Key)
-					}
-				}
-			}
-			// now do the reverse
-			for _, e1 := range entries {
-				for key, _ := range e1.Content {
-					if !keyInLog(key, loggedKeys.Entries) {
+func CleanUpResultLookupForOneCertname(conf Conf, certname string) (*YamlCleanResult, error) {
+	hierarchy, err := GetHierarchyForCertname(conf, certname)
+	if err != nil {
+		return nil, err
+	} else {
+		entries := []YamlMapEntry{}
+
+		for _, p := range hierarchy.Paths {
+			e := GetYamlMapEntryFromPath(p)
+			entries = append(entries, e)
+		}
+
+		loggedKeys, err := GetOneCertnameLogEntry(conf.DB, certname)
+		res := YamlCleanResult{
+			InLogNotInHiera: []string{},
+			InLogAndHiera:   []InLogAndHieraEntry{},
+			InHieraNotInLog: []InLogAndHieraEntry{},
+			DuplicateData:   []InLogAndHieraEntry{},
+		}
+		if err == nil {
+			// first get keys in log but not in hiera and in log and in hiera
+			for _, e1 := range loggedKeys.Entries {
+				check0 := false
+				for _, e2 := range entries {
+					if IsKeyInMap(e1.Key, e2.Content) || IsKeyInMap(e1.Key, e2.Flat) {
+						check0 = true
 						check1 := false
-						for index, e3 := range res.InHieraNotInLog {
-							if e3.Key == key {
-								res.InHieraNotInLog[index].Paths = append(res.InHieraNotInLog[index].Paths, e1.Path)
+						for index, e3 := range res.InLogAndHiera {
+							if e3.Key == e1.Key {
+								res.InLogAndHiera[index].Paths = append(res.InLogAndHiera[index].Paths, e2.Path)
 								check1 = true
 							}
 						}
 						if !check1 {
-							res.InHieraNotInLog = append(res.InHieraNotInLog, InLogAndHieraEntry{
-								Key:   key,
-								Paths: []string{e1.Path},
+							res.InLogAndHiera = append(res.InLogAndHiera, InLogAndHieraEntry{
+								Key:   e1.Key,
+								Paths: []string{e2.Path},
 							})
 						}
 					}
 				}
+				if !check0 {
+					res.InLogNotInHiera = append(res.InLogNotInHiera, e1.Key)
+				}
 			}
+		}
+		// now do the reverse
+		for _, e1 := range entries {
+			for key, _ := range e1.Content {
+				if !keyInLog(key, loggedKeys.Entries) {
+					check1 := false
+					for index, e3 := range res.InHieraNotInLog {
+						if e3.Key == key {
+							res.InHieraNotInLog[index].Paths = append(res.InHieraNotInLog[index].Paths, e1.Path)
+							check1 = true
+						}
+					}
+					if !check1 {
+						res.InHieraNotInLog = append(res.InHieraNotInLog, InLogAndHieraEntry{
+							Key:   key,
+							Paths: []string{e1.Path},
+						})
+					}
+				}
+			}
+		}
 
-			// lastly search for duplicates
-			for _, e1 := range entries {
-				for key1, val1 := range e1.Content {
-					for _, e2 := range entries {
-						if e1.Path != e2.Path {
-							for key2, val2 := range e2.Content {
-								check_equal := false
-								switch val1.(type) {
-								case map[string]interface{}:
-									if key1 == key2 && reflect.ValueOf(val2).Kind() == reflect.Map {
-										m1 := val1.(map[string]interface{})
-										m2 := val2.(map[string]interface{})
-										eq := reflect.DeepEqual(m1, m2)
-										if eq {
-											check_equal = true
-										}
+		// lastly search for duplicates
+		for _, e1 := range entries {
+			for key1, val1 := range e1.Content {
+				for _, e2 := range entries {
+					if e1.Path != e2.Path {
+						for key2, val2 := range e2.Content {
+							check_equal := false
+							switch val1.(type) {
+							case map[string]interface{}:
+								if key1 == key2 && reflect.ValueOf(val2).Kind() == reflect.Map {
+									m1 := val1.(map[string]interface{})
+									m2 := val2.(map[string]interface{})
+									eq := reflect.DeepEqual(m1, m2)
+									if eq {
+										check_equal = true
 									}
+								}
+							case []interface{}:
+								switch val2.(type) {
 								case []interface{}:
 									if key1 == key2 && len(val1.([]interface{})) == len(val2.([]interface{})) {
-										// now we need to check if each value is the same
 										a1 := val1.([]interface{})
+
 										a2 := val2.([]interface{})
 										check2 := true
 										for indexA, valA := range a1 {
@@ -141,40 +154,41 @@ func GetKeyLocationsForCertnameEndpoint(conf Conf) gin.HandlerFunc {
 										}
 									}
 								default:
-									if key1 == key2 && val1 == val2 {
-										check_equal = true
-									}
+									check_equal = false
 								}
-
-								if check_equal {
-									check1 := false
-									for index, e3 := range res.DuplicateData {
-										if e3.Key == key1 {
-											if !stringInSlice(e1.Path, res.DuplicateData[index].Paths) {
-												res.DuplicateData[index].Paths = append(res.DuplicateData[index].Paths, e1.Path)
-											}
-											check1 = true
-										}
-									}
-									if !check1 {
-										res.DuplicateData = append(res.DuplicateData, InLogAndHieraEntry{
-											Key:   key1,
-											Paths: []string{e1.Path},
-										})
-									}
+							default:
+								if key1 == key2 && val1 == val2 {
+									check_equal = true
 								}
 							}
 
+							if check_equal {
+								check1 := false
+								for index, e3 := range res.DuplicateData {
+									if e3.Key == key1 {
+										if !stringInSlice(e1.Path, res.DuplicateData[index].Paths) {
+											res.DuplicateData[index].Paths = append(res.DuplicateData[index].Paths, e1.Path)
+										}
+										check1 = true
+									}
+								}
+								if !check1 {
+									res.DuplicateData = append(res.DuplicateData, InLogAndHieraEntry{
+										Key:   key1,
+										Paths: []string{e1.Path},
+									})
+								}
+							}
 						}
+
 					}
 				}
 			}
-
-			c.JSON(http.StatusOK, res)
-
 		}
+		return &res, nil
+
 	}
-	return gin.HandlerFunc(fn)
+
 }
 
 // CleanAllEndpoint example
