@@ -31,16 +31,17 @@ type HieraDataExample struct {
 
 // Conf is the main configuration file for arvo and holds the settings needed to run it
 type Conf struct {
-	DB            Database       `yaml:"db"`
-	KeyTTLMinutes int            `yaml:"key_ttl_minutes"`
-	DataDir       string         `yaml:"datadir"`
-	Puppet        PuppetDBConfig `yaml:"puppet"`
-	HieraFile     string         `yaml:"hiera_file"`
-	Hierarchy     []string       `yaml:"hierarchy"`
-	Dummy         bool           `yaml:"dummy"`
-	UseInflux     bool           `yaml:"use_influx"`
-	Url           string         `yaml:"url"`
-	Bucket        string         `yaml:"bucket"`
+	DB             Database       `yaml:"db"`
+	KeyTTLMinutes  int            `yaml:"key_ttl_minutes"`
+	DataDir        string         `yaml:"datadir"`
+	Puppet         PuppetDBConfig `yaml:"puppet"`
+	HieraFile      string         `yaml:"hiera_file"`
+	Hierarchy      []string       `yaml:"hierarchy"`
+	Dummy          bool           `yaml:"dummy"`
+	UseInflux      bool           `yaml:"use_influx"`
+	Url            string         `yaml:"url"`
+	Bucket         string         `yaml:"bucket"`
+	InfluxInterval int            `yaml:"influx_interval"`
 }
 
 // Database holds the database settings to run arvo

@@ -79,6 +79,10 @@ func main() {
 		c.Bucket = "Arvo"
 	}
 
+	if c.InfluxInterval <= 0 {
+		c.InfluxInterval = 2
+	}
+
 	router := gin.Default()
 	host := fmt.Sprintf("%s:%d", *addr, *port)
 	hostSwag := fmt.Sprintf("%s:%d", *swaggerHost, *port)
@@ -172,8 +176,14 @@ func main() {
 
 	if c.UseInflux {
 		go func() {
-			cmd.ExportToInfluxDB(c)
-			time.Sleep(1 * time.Hour)
+			for {
+				i := time.Duration(2)
+				if c.InfluxInterval != 0 {
+					i = time.Duration(c.InfluxInterval)
+				}
+				cmd.ExportToInfluxDB(c)
+				time.Sleep(i * time.Hour)
+			}
 
 		}()
 	}
