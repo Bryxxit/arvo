@@ -143,19 +143,36 @@ func CleanUpResultLookupForOneCertname(conf Conf, certname string) (*YamlCleanRe
 							case []interface{}:
 								switch val2.(type) {
 								case []interface{}:
-									if key1 == key2 && len(val1.([]interface{})) == len(val2.([]interface{})) {
-										a1 := val1.([]interface{})
-
-										a2 := val2.([]interface{})
-										check2 := true
-										for indexA, valA := range a1 {
-											if valA != a2[indexA] {
-												check2 = false
-											}
-										}
-
-										if check2 {
+									// if is the same key | standar
+									if key1 == key2 {
+										// If both arrays are the same size
+										if len(val1.([]interface{})) == len(val2.([]interface{})) {
+											a1 := val1.([]interface{})
+											a2 := val2.([]interface{})
 											check_equal = true
+											for indexA, valA := range a1 {
+												t1 := reflect.TypeOf(valA).String()
+												t2 := reflect.TypeOf(a2[indexA]).String()
+												// array of hashes is giving trouble
+												if t1 == t2 {
+													if t1 == "map[interface {}]interface {}" {
+														m1 := valA.(map[interface{}]interface{})
+														m2 := a2[indexA].(map[interface{}]interface{})
+														eq := reflect.DeepEqual(m1, m2)
+														if check_equal {
+															check_equal = eq
+														}
+													} else {
+														if valA != a2[indexA] {
+															check_equal = false
+														}
+													}
+												} else {
+													check_equal = false
+												}
+											}
+										} else {
+											check_equal = false
 										}
 									}
 								default:
