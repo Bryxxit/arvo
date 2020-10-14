@@ -127,13 +127,18 @@ func CleanUpResultLookupForOneCertname(conf Conf, certname string) (*YamlCleanRe
 							check_equal := false
 							switch val1.(type) {
 							case map[string]interface{}:
-								if key1 == key2 && reflect.ValueOf(val2).Kind() == reflect.Map {
-									m1 := val1.(map[string]interface{})
-									m2 := val2.(map[string]interface{})
-									eq := reflect.DeepEqual(m1, m2)
-									if eq {
-										check_equal = true
+								switch val2.(type) {
+								case map[string]interface{}:
+									if key1 == key2 && reflect.ValueOf(val2).Kind() == reflect.Map {
+										m1 := val1.(map[string]interface{})
+										m2 := val2.(map[string]interface{})
+										eq := reflect.DeepEqual(m1, m2)
+										if eq {
+											check_equal = true
+										}
 									}
+								default:
+									check_equal = false
 								}
 							case []interface{}:
 								switch val2.(type) {

@@ -37,7 +37,10 @@ type Conf struct {
 	Puppet         PuppetDBConfig `yaml:"puppet"`
 	HieraFile      string         `yaml:"hiera_file"`
 	Hierarchy      []string       `yaml:"hierarchy"`
-	Dummy          bool           `yaml:"dummy"`
+	CodeDir        string         `yaml:"codedir"`
+	PuppetEnv      string         `yaml:"env"`
+	ScanFiles      bool           `yaml:"scan_files"`
+	ScanClasses    bool           `yaml:"scan_classes"`
 	UseInflux      bool           `yaml:"use_influx"`
 	Url            string         `yaml:"url"`
 	Bucket         string         `yaml:"bucket"`
